@@ -83,11 +83,12 @@ export default function Foreground() {
     try {
       if (selectedData) {
         const noteRef = doc(db, "notes", selectedData.id);
-        await updateDoc(noteRef, data);
+        const updatedData = { ...data, date: new Date().toISOString() };
+        await updateDoc(noteRef, updatedData);
         dispatch(
           updateNote({
             id: selectedData.id,
-            ...data,
+            ...updatedData,
           })
         );
         toast.success("Note updated successfully!");
