@@ -9,6 +9,10 @@ export default function Foreground() {
   const dispatch = useDispatch();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const notesPerPage = 6;
+  const totalPages = Math.ceil(notes.length / notesPerPage);
 
   const handleEdit = (data) => {
     setSelectedData(data);
@@ -55,6 +59,15 @@ export default function Foreground() {
     return new Date(b.date) - new Date(a.date);
   });
 
+  const paginatedNotes = sortedNotes.slice(
+    (currentPage - 1) * notesPerPage,
+    currentPage * notesPerPage
+  );
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   return (
     <div>
       <button
@@ -64,7 +77,7 @@ export default function Foreground() {
         Add Note
       </button>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {sortedNotes.map((note) => (
+        {paginatedNotes.map((note) => (
           <Card key={note.id} sampleData={note} onEdit={handleEdit} />
         ))}
       </div>
@@ -76,6 +89,33 @@ export default function Foreground() {
           onSave={handleSave}
         />
       )}
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 mx-1 bg-gray-300 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index + 1}
+            onClick={() => handlePageChange(index + 1)}
+            className={`px-3 py-1 mx-1 ${
+              currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-300"
+            } rounded`}
+          >
+            {index + 1}
+          </button>
+        ))}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 mx-1 bg-gray-300 rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
