@@ -1,6 +1,11 @@
-import { createSlice, createSelector } from "@reduxjs/toolkit";
+import { createSlice, createSelector, PayloadAction } from "@reduxjs/toolkit";
+import { Note } from "../types/index";
 
-const initialState = {
+interface NoteState {
+  notes: Note[];
+}
+
+const initialState: NoteState = {
   notes: [],
 };
 
@@ -8,21 +13,28 @@ const NoteSlice = createSlice({
   name: "notes",
   initialState,
   reducers: {
-    initializeNotes: (state, action) => {
+    initializeNotes: (state, action: PayloadAction<Note[]>) => {
       state.notes = action.payload;
     },
-    addNote: (state, action) => {
+    addNote: (state, action: PayloadAction<Note>) => {
       state.notes.push(action.payload);
     },
-    updateNote: (state, action) => {
+    updateNote: (state, action: PayloadAction<Note>) => {
       state.notes = state.notes.map((note) =>
         note.id === action.payload.id ? action.payload : note
       );
     },
-    deleteNote: (state, action) => {
+    deleteNote: (state, action: PayloadAction<string>) => {
       state.notes = state.notes.filter((note) => note.id !== action.payload);
     },
-    pinNote: (state, action) => {
+    pinNote: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        pinned: boolean;
+        pinnedDate: string | null;
+      }>
+    ) => {
       state.notes = state.notes.map((note) =>
         note.id === action.payload.id
           ? {
@@ -37,7 +49,7 @@ const NoteSlice = createSlice({
 });
 
 export const NoteSliceSelector = createSelector(
-  (state) => state.notes,
+  (state: { notes: NoteState }) => state.notes,
   (noteSlice) => noteSlice.notes
 );
 

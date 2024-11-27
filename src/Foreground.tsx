@@ -8,8 +8,8 @@ import {
   updateNote,
   deleteNote,
 } from "./store/NoteSlice";
-import DialogBox from "./components/custom/DailogBox";
 import ConfirmDeleteDialog from "./components/custom/ConfirmDeleteDialog";
+import DialogBox from "./components/custom/DialogBox";
 import { toast } from "sonner";
 import { db } from "./firebase/firebase";
 import {
@@ -23,13 +23,12 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Note } from "./types";
+import { Note } from "./types/index";
 import { Button } from "@/components/ui/button";
 import Loader from "./components/custom/Loader";
 
@@ -54,7 +53,13 @@ export default function Foreground() {
         })) as Note[];
         dispatch(initializeNotes(notesData));
       } catch (error) {
-        toast.error("An error occurred while fetching notes.");
+        if (error instanceof Error) {
+          toast.error(
+            "An error occurred while fetching notes: " + error.message
+          );
+        } else {
+          toast.error("An error occurred while fetching notes.");
+        }
       } finally {
         setLoading(false);
       }
@@ -83,7 +88,12 @@ export default function Foreground() {
     try {
       if (selectedData) {
         const noteRef = doc(db, "notes", selectedData.id);
-        const updatedData = { ...data, date: new Date().toISOString() };
+        const updatedData = {
+          ...data,
+          date: new Date().toISOString(),
+          pinned: selectedData.pinned,
+          pinnedDate: selectedData.pinnedDate,
+        };
         await updateDoc(noteRef, updatedData);
         dispatch(
           updateNote({
@@ -111,7 +121,13 @@ export default function Foreground() {
         toast.success("Note added successfully!");
       }
     } catch (error) {
-      toast.error("An error occurred while saving the note.");
+      if (error instanceof Error) {
+        toast.error(
+          "An error occurred while saving the note: " + error.message
+        );
+      } else {
+        toast.error("An error occurred while saving the note.");
+      }
     } finally {
       setLoading(false);
       setIsDialogOpen(false);
@@ -125,7 +141,13 @@ export default function Foreground() {
       dispatch(deleteNote(id));
       toast.success("Note deleted successfully!");
     } catch (error) {
-      toast.error("An error occurred while deleting the note.");
+      if (error instanceof Error) {
+        toast.error(
+          "An error occurred while deleting the note: " + error.message
+        );
+      } else {
+        toast.error("An error occurred while deleting the note.");
+      }
     } finally {
       setLoading(false);
       setIsDeleteDialogOpen(false);

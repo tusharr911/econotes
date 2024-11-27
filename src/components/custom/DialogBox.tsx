@@ -6,19 +6,30 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../ui/dialog";
-import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import { Note } from "../../types/index";
 
-const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
-  const dispatch = useDispatch();
+interface DialogBoxProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  sampleData: Note | null;
+  onSave: (data: Omit<Note, "id" | "date" | "pinned" | "pinnedDate">) => void;
+}
+
+const DialogBox: React.FC<DialogBoxProps> = ({
+  open,
+  onOpenChange,
+  sampleData,
+  onSave,
+}) => {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
+  } = useForm<Omit<Note, "id" | "date" | "pinned" | "pinnedDate">>({
     defaultValues: {
       title: sampleData ? sampleData.title : "",
       tagline: sampleData ? sampleData.tagline : "",
@@ -26,13 +37,20 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
     },
   });
 
-  const onSubmit = (data) => {
-    onSave(data);
-    onOpenChange(false);
-    reset();
-    toast.success(
-      sampleData ? "Note updated successfully!" : "Note added successfully!"
-    );
+  const onSubmit: SubmitHandler<Omit<Note, "id" | "date" | "pinned" | "pinnedDate">> = (data) => {
+    try {
+      onSave(data);
+      toast.success(sampleData ? "Note updated successfully!" : "Note added successfully!");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("An error occurred while saving the note: " + error.message);
+      } else {
+        toast.error("An error occurred while saving the note.");
+      }
+    } finally {
+      onOpenChange(false);
+      reset();
+    }
   };
 
   return (
@@ -41,7 +59,7 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
         <DialogOverlay />
         <DialogContent>
           <DialogTitle>{sampleData ? "Edit Note" : "Add Note"}</DialogTitle>
-          <DialogDescription>
+          <DialogDescription asChild>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <label
@@ -73,9 +91,10 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
                 <input
                   id="tagline"
                   {...register("tagline")}
-                  className="w-full p-2 text-sm text-muted-foreground border border-gray-300 rounded mt-1"
+                  className="w-full p-2 border border-gray-300 rounded mt-1 text-sm text-muted-foreground"
                 />
               </div>
+
               <div>
                 <label
                   htmlFor="body"

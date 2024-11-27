@@ -3,14 +3,13 @@ import { toast } from "sonner";
 import { pinNote } from "./store/NoteSlice";
 import { db } from "./firebase/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-
+import { Note } from "./types/index";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Note } from "./type";
 
 interface CardProps {
   sampleData: Note;
@@ -18,38 +17,57 @@ interface CardProps {
   onDelete?: (id: string) => void;
 }
 
-export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
+const Card: React.FC<CardProps> = ({ sampleData, onEdit, onDelete }) => {
   const dispatch = useDispatch();
 
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete(sampleData.id);
+  const handleDelete = async () => {
+    try {
+      if (onDelete) {
+        onDelete(sampleData.id);
+        toast.success("Note deleted successfully!");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("An error occurred while deleting the note: " + error.message);
+      } else {
+        toast.error("An error occurred while deleting the note.");
+      }
+      console.error("Delete Error:", error);
     }
   };
 
   const handlePin = async () => {
-    const newPinnedStatus = !sampleData.pinned;
-    const newPinnedDate = newPinnedStatus ? new Date().toISOString() : null;
+    try {
+      const newPinnedStatus = !sampleData.pinned;
+      const newPinnedDate = newPinnedStatus ? new Date().toISOString() : null;
 
-    const noteRef = doc(db, "notes", sampleData.id);
-    await updateDoc(noteRef, {
-      pinned: newPinnedStatus,
-      pinnedDate: newPinnedDate,
-    });
-
-    dispatch(
-      pinNote({
-        id: sampleData.id,
+      const noteRef = doc(db, "notes", sampleData.id);
+      await updateDoc(noteRef, {
         pinned: newPinnedStatus,
         pinnedDate: newPinnedDate,
-      })
-    );
+      });
 
-    toast.success(
-      newPinnedStatus
-        ? "Note pinned successfully!"
-        : "Note unpinned successfully!"
-    );
+      dispatch(
+        pinNote({
+          id: sampleData.id,
+          pinned: newPinnedStatus,
+          pinnedDate: newPinnedDate,
+        })
+      );
+
+      toast.success(
+        newPinnedStatus
+          ? "Note pinned successfully!"
+          : "Note unpinned successfully!"
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("An error occurred while pinning the note: " + error.message);
+      } else {
+        toast.error("An error occurred while pinning the note.");
+      }
+      console.error("Pin Error:", error);
+    }
   };
 
   const formattedDate = new Date(sampleData.date).toLocaleString("en-US", {
@@ -91,22 +109,19 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
 
       <p className="text-sm italic mb-4 text-gray-300">{sampleData.tagline}</p>
 
-      <p className="text-sm flex-grow leading-tight text-white">
-        {sampleData.body}
-      </p>
+      <p className="text-sm flex-grow leading-tight text-white">{sampleData.body}</p>
 
       <div className="flex justify-between items-center">
         <h5 className="text-xs text-gray-400">{formattedDate}</h5>
       </div>
       <div className="tag w-full py-5 flex justify-center items-center">
-        <h3
-          className="text-sm font-semibold cursor-pointer"
-          onClick={handlePin}
-        >
+        <h3 className="text-sm font-semibold cursor-pointer" onClick={handlePin}>
           {sampleData.pinned ? "📌 Unpin" : "📌 Pin"}
         </h3>
       </div>
       <div className="footer absolute w-full bottom-0 left-0 px-2 py-3"></div>
     </div>
   );
-}
+};
+
+export default Card;
