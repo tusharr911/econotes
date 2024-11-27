@@ -1,4 +1,3 @@
-import { updateNote } from "@/store/NoteSlice";
 import {
   Dialog,
   DialogPortal,
@@ -11,23 +10,18 @@ import {
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 
-const DialogBox = ({ open, onOpenChange, sampleData }) => {
+const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
   const dispatch = useDispatch();
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
-      title: sampleData.title,
-      tagline: sampleData.tagline,
-      body: sampleData.body,
+      title: sampleData ? sampleData.title : "",
+      tagline: sampleData ? sampleData.tagline : "",
+      body: sampleData ? sampleData.body : "",
     },
   });
 
   const onSubmit = (data) => {
-    dispatch(updateNote({
-      id: sampleData.id,
-      title: data.title,
-      tagline: data.tagline,
-      body: data.body,
-    }));
+    onSave(data);
     onOpenChange(false);
     reset();
   };
@@ -37,7 +31,7 @@ const DialogBox = ({ open, onOpenChange, sampleData }) => {
       <DialogPortal>
         <DialogOverlay />
         <DialogContent>
-          <DialogTitle>Edit Note</DialogTitle>
+          <DialogTitle>{sampleData ? "Edit Note" : "Add Note"}</DialogTitle>
           <DialogDescription>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div>
