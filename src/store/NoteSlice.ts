@@ -8,6 +8,8 @@ const initialState = {
       tagline: "Tagline for Sample Note 1",
       body: "This is the body of Sample Note 1.",
       date: new Date().toISOString(),
+      pinned: false,
+      pinnedDate: null,
     },
     {
       id: 2,
@@ -15,6 +17,8 @@ const initialState = {
       tagline: "Tagline for Sample Note 2",
       body: "This is the body of Sample Note 2.",
       date: new Date().toISOString(),
+      pinned: false,
+      pinnedDate: null,
     },
     {
       id: 3,
@@ -22,6 +26,8 @@ const initialState = {
       tagline: "Tagline for Sample Note 3",
       body: "This is the body of Sample Note 3.",
       date: new Date().toISOString(),
+      pinned: false,
+      pinnedDate: null,
     },
   ],
 };
@@ -40,6 +46,8 @@ const NoteSlice = createSlice({
         tagline: action.payload.tagline,
         body: action.payload.body,
         date: action.payload.date,
+        pinned: false,
+        pinnedDate: null,
       };
       state.notes.push(note);
     },
@@ -54,6 +62,17 @@ const NoteSlice = createSlice({
               title: action.payload.title,
               tagline: action.payload.tagline,
               body: action.payload.body,
+            }
+          : note
+      );
+    },
+    pinNote: (state, action) => {
+      state.notes = state.notes.map((note) =>
+        note.id === action.payload.id
+          ? {
+              ...note,
+              pinned: !note.pinned,
+              pinnedDate: !note.pinned ? new Date().toISOString() : null,
             }
           : note
       );
@@ -73,4 +92,5 @@ export const {
   addNote,
   deleteNote,
   updateNote,
+  pinNote,
 } = NoteSlice.actions;

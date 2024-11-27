@@ -1,5 +1,5 @@
 import { useDispatch } from "react-redux";
-import { deleteNote } from "./store/NoteSlice";
+import { deleteNote, pinNote } from "./store/NoteSlice";
 
 interface SampleData {
   id: number;
@@ -7,6 +7,8 @@ interface SampleData {
   tagline: string;
   body: string;
   date: string;
+  pinned: boolean;
+  pinnedDate: string | null;
 }
 
 interface CardProps {
@@ -19,6 +21,10 @@ export default function Card({ sampleData, onEdit }: CardProps) {
 
   const handleDelete = () => {
     dispatch(deleteNote({ id: sampleData.id }));
+  };
+
+  const handlePin = () => {
+    dispatch(pinNote({ id: sampleData.id }));
   };
 
   const formattedDate = new Date(sampleData.date).toLocaleString("en-US", {
@@ -54,7 +60,9 @@ export default function Card({ sampleData, onEdit }: CardProps) {
         <h5 className="text-xs text-gray-400">{formattedDate}</h5>
       </div>
       <div className="tag w-full py-5 flex justify-center items-center">
-        <h3 className="text-sm font-semibold cursor-pointer">Pin</h3>
+        <h3 className="text-sm font-semibold cursor-pointer" onClick={handlePin}>
+          {sampleData.pinned ? "📌 Unpin" : "📌 Pin"}
+        </h3>
       </div>
       <div className="footer absolute w-full bottom-0 left-0 px-2 py-3"></div>
     </div>

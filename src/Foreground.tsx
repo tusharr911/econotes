@@ -22,25 +22,38 @@ export default function Foreground() {
 
   const handleSave = (data) => {
     if (selectedData) {
-      // Update existing note
-      dispatch(updateNote({
-        id: selectedData.id,
-        title: data.title,
-        tagline: data.tagline,
-        body: data.body,
-      }));
+      dispatch(
+        updateNote({
+          id: selectedData.id,
+          title: data.title,
+          tagline: data.tagline,
+          body: data.body,
+        })
+      );
     } else {
-      // Add new note
-      dispatch(addNote({
-        id: Date.now(), // Generate a unique ID
-        title: data.title,
-        tagline: data.tagline,
-        body: data.body,
-        date: new Date().toISOString(),
-      }));
+      dispatch(
+        addNote({
+          id: Date.now(),
+          title: data.title,
+          tagline: data.tagline,
+          body: data.body,
+          date: new Date().toISOString(),
+          pinned: false,
+          pinnedDate: null,
+        })
+      );
     }
     setIsDialogOpen(false);
   };
+
+  const sortedNotes = [...notes].sort((a, b) => {
+    if (a.pinned && b.pinned) {
+      return new Date(b.pinnedDate) - new Date(a.pinnedDate);
+    }
+    if (a.pinned) return -1;
+    if (b.pinned) return 1;
+    return new Date(b.date) - new Date(a.date);
+  });
 
   return (
     <div>
@@ -51,7 +64,7 @@ export default function Foreground() {
         Add Note
       </button>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {notes.map((note) => (
+        {sortedNotes.map((note) => (
           <Card key={note.id} sampleData={note} onEdit={handleEdit} />
         ))}
       </div>

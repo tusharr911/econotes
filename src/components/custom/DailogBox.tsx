@@ -12,7 +12,7 @@ import { useDispatch } from "react-redux";
 
 const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
   const dispatch = useDispatch();
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       title: sampleData ? sampleData.title : "",
       tagline: sampleData ? sampleData.tagline : "",
@@ -44,9 +44,12 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
                 <input
                   id="title"
                   type="text"
-                  {...register("title")}
+                  {...register("title", { required: "Title is required" })}
                   className="w-full p-2 border border-gray-300 rounded mt-1 text-sm text-muted-foreground"
                 />
+                {errors.title && (
+                  <span className="text-red-500 text-xs mt-1">{errors.title.message}</span>
+                )}
               </div>
 
               <div>
