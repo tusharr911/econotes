@@ -9,6 +9,7 @@ import {
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
   const dispatch = useDispatch();
@@ -29,7 +30,9 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
     onSave(data);
     onOpenChange(false);
     reset();
-    toast.success(sampleData ? "Note updated successfully!" : "Note added successfully!");
+    toast.success(
+      sampleData ? "Note updated successfully!" : "Note added successfully!"
+    );
   };
 
   return (
@@ -54,7 +57,9 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
                   className="w-full p-2 border border-gray-300 rounded mt-1 text-sm text-muted-foreground"
                 />
                 {errors.title && (
-                  <span className="text-red-500 text-xs mt-1">{errors.title.message}</span>
+                  <span className="text-red-500 text-xs mt-1">
+                    {errors.title.message}
+                  </span>
                 )}
               </div>
 
@@ -86,19 +91,14 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
                 />
               </div>
               <div className="flex justify-end space-x-2 mt-4">
-                <button
+                <Button
                   type="button"
                   onClick={() => onOpenChange(false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded"
+                  className="bg-gray-400 hover:bg-gray-500"
                 >
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded"
-                >
-                  Save
-                </button>
+                </Button>
+                <Button type="submit">Save</Button>
               </div>
             </form>
           </DialogDescription>

@@ -1,23 +1,14 @@
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
-import { pinNote, updateNote } from "./store/NoteSlice";
+import { pinNote } from "./store/NoteSlice";
 import { db } from "./firebase/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-
-interface SampleData {
-  id: number;
-  title: string;
-  tagline: string;
-  body: string;
-  date: string;
-  pinned: boolean;
-  pinnedDate: string | null;
-}
+import { Note } from "./type/index";
 
 interface CardProps {
-  sampleData: SampleData;
-  onEdit?: (data: SampleData) => void;
-  onDelete?: (id: number) => void;
+  sampleData: Note;
+  onEdit?: (data: Note) => void;
+  onDelete?: (id: string) => void;
 }
 
 export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
@@ -33,19 +24,27 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
     const newPinnedStatus = !sampleData.pinned;
     const newPinnedDate = newPinnedStatus ? new Date().toISOString() : null;
 
-    const noteRef = doc(db, "notes", sampleData.id.toString());
+    // Update Firestore document
+    const noteRef = doc(db, "notes", sampleData.id);
     await updateDoc(noteRef, {
       pinned: newPinnedStatus,
       pinnedDate: newPinnedDate,
     });
 
-    dispatch(pinNote({
-      id: sampleData.id,
-      pinned: newPinnedStatus,
-      pinnedDate: newPinnedDate,
-    }));
+    // Update Redux store
+    dispatch(
+      pinNote({
+        id: sampleData.id,
+        pinned: newPinnedStatus,
+        pinnedDate: newPinnedDate,
+      })
+    );
 
-    toast.success(newPinnedStatus ? "Note pinned successfully!" : "Note unpinned successfully!");
+    toast.success(
+      newPinnedStatus
+        ? "Note pinned successfully!"
+        : "Note unpinned successfully!"
+    );
   };
 
   const formattedDate = new Date(sampleData.date).toLocaleString("en-US", {
@@ -58,7 +57,7 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
   });
 
   return (
-    <div className="flex-shrink-0 w-full h-80 rounded-none text-white py-4 px-2 overflow-hidden bg-zinc-900 bg-opacity-90 shadow-lg">
+    <div className="flex flex-col w-full h-80 text-white py-4 px-4 overflow-hidden bg-zinc-900 bg-opacity-90 shadow-lg rounded-lg">
       <div className="flex justify-between items-center">
         <span
           className="cursor-pointer text-lg"
@@ -75,13 +74,18 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
 
       <p className="text-sm italic mb-4 text-gray-300">{sampleData.tagline}</p>
 
-      <p className="text-sm leading-tight text-white">{sampleData.body}</p>
+      <p className="text-sm flex-grow leading-tight text-white">
+        {sampleData.body}
+      </p>
 
       <div className="flex justify-between items-center">
         <h5 className="text-xs text-gray-400">{formattedDate}</h5>
       </div>
-      <div className="tag w-full py-5 flex justify-center items-center">
-        <h3 className="text-sm font-semibold cursor-pointer" onClick={handlePin}>
+      <div className="tag w-full mt-2">
+        <h3
+          className="text-sm font-semibold cursor-pointer "
+          onClick={handlePin}
+        >
           {sampleData.pinned ? "📌 Unpin" : "📌 Pin"}
         </h3>
       </div>
