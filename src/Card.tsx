@@ -1,3 +1,6 @@
+import { useDispatch } from "react-redux";
+import { deleteNote } from "./store/NoteSlice";
+
 interface SampleData {
   id: number;
   title: string;
@@ -12,6 +15,12 @@ interface CardProps {
 }
 
 export default function Card({ sampleData, onEdit }: CardProps) {
+  const dispatch = useDispatch();
+
+  const handleDelete = () => {
+    dispatch(deleteNote({ id: sampleData.id }));
+  };
+
   const formattedDate = new Date(sampleData.date).toLocaleString("en-US", {
     year: "numeric",
     month: "2-digit",
@@ -20,6 +29,7 @@ export default function Card({ sampleData, onEdit }: CardProps) {
     minute: "2-digit",
     hour12: true,
   });
+
   return (
     <div className="flex-shrink-0 w-full h-80 rounded-none text-white py-4 px-2 overflow-hidden bg-zinc-900 bg-opacity-90 shadow-lg">
       <div className="flex justify-between items-center">
@@ -29,7 +39,9 @@ export default function Card({ sampleData, onEdit }: CardProps) {
         >
           ✏️
         </span>
-        <span className="cursor-pointer text-xl">❌</span>
+        <span className="cursor-pointer text-xl" onClick={handleDelete}>
+          ❌
+        </span>
       </div>
 
       <h2 className="text-lg font-bold mb-2">{sampleData.title}</h2>

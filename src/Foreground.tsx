@@ -17,6 +17,7 @@ export default function Foreground() {
 
   return (
     <div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {notes.map((note) => (
           <Card key={note.id} sampleData={note} onEdit={handleEdit} />

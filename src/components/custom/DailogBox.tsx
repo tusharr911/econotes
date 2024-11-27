@@ -1,3 +1,4 @@
+import { updateNote } from "@/store/NoteSlice";
 import {
   Dialog,
   DialogPortal,
@@ -8,8 +9,10 @@ import {
   DialogDescription,
 } from "../ui/dialog";
 import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 
 const DialogBox = ({ open, onOpenChange, sampleData }) => {
+  const dispatch = useDispatch();
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
       title: sampleData.title,
@@ -19,6 +22,12 @@ const DialogBox = ({ open, onOpenChange, sampleData }) => {
   });
 
   const onSubmit = (data) => {
+    dispatch(updateNote({
+      id: sampleData.id,
+      title: data.title,
+      tagline: data.tagline,
+      body: data.body,
+    }));
     onOpenChange(false);
     reset();
   };
