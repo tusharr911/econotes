@@ -3,16 +3,21 @@ import {
   DialogPortal,
   DialogOverlay,
   DialogContent,
-  DialogClose,
   DialogTitle,
   DialogDescription,
 } from "../ui/dialog";
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
   const dispatch = useDispatch();
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       title: sampleData ? sampleData.title : "",
       tagline: sampleData ? sampleData.tagline : "",
@@ -24,6 +29,7 @@ const DialogBox = ({ open, onOpenChange, sampleData, onSave }) => {
     onSave(data);
     onOpenChange(false);
     reset();
+    toast.success(sampleData ? "Note updated successfully!" : "Note added successfully!");
   };
 
   return (

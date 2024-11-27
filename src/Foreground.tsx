@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Card from "./Card";
-import { NoteSliceSelector, addNote, updateNote } from "./store/NoteSlice";
+import {
+  NoteSliceSelector,
+  addNote,
+  updateNote,
+  deleteNote,
+} from "./store/NoteSlice";
 import DialogBox from "./components/custom/DailogBox";
+import { toast } from "sonner";
 
 export default function Foreground() {
   const notes = useSelector(NoteSliceSelector);
@@ -34,6 +40,7 @@ export default function Foreground() {
           body: data.body,
         })
       );
+      toast.success("Note updated successfully!");
     } else {
       dispatch(
         addNote({
@@ -46,8 +53,18 @@ export default function Foreground() {
           pinnedDate: null,
         })
       );
+      toast.success("Note added successfully!");
     }
     setIsDialogOpen(false);
+  };
+
+  const handleDelete = (id) => {
+    dispatch(
+      deleteNote({
+        id,
+      })
+    );
+    toast.success("Note deleted successfully!");
   };
 
   const sortedNotes = [...notes].sort((a, b) => {
@@ -78,7 +95,12 @@ export default function Foreground() {
       </button>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
         {paginatedNotes.map((note) => (
-          <Card key={note.id} sampleData={note} onEdit={handleEdit} />
+          <Card
+            key={note.id}
+            sampleData={note}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         ))}
       </div>
       {isDialogOpen && (
@@ -102,7 +124,9 @@ export default function Foreground() {
             key={index + 1}
             onClick={() => handlePageChange(index + 1)}
             className={`px-3 py-1 mx-1 ${
-              currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-300"
+              currentPage === index + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-300"
             } rounded`}
           >
             {index + 1}

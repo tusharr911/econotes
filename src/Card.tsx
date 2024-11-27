@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux";
 import { deleteNote, pinNote } from "./store/NoteSlice";
+import { toast } from "sonner";
 
 interface SampleData {
   id: number;
@@ -14,17 +15,21 @@ interface SampleData {
 interface CardProps {
   sampleData: SampleData;
   onEdit?: (data: SampleData) => void;
+  onDelete?: (id: number) => void;
 }
 
-export default function Card({ sampleData, onEdit }: CardProps) {
+export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
   const dispatch = useDispatch();
 
   const handleDelete = () => {
-    dispatch(deleteNote({ id: sampleData.id }));
+    if (onDelete) {
+      onDelete(sampleData.id);
+    }
   };
 
   const handlePin = () => {
     dispatch(pinNote({ id: sampleData.id }));
+    toast.success(sampleData.pinned ? "Note unpinned successfully!" : "Note pinned successfully!");
   };
 
   const formattedDate = new Date(sampleData.date).toLocaleString("en-US", {
