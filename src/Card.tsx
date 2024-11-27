@@ -1,8 +1,27 @@
-export default function Card({ sampleData }) {
+import React from "react";
+
+interface SampleData {
+  id: number;
+  title: string;
+  tagline: string;
+  body: string;
+}
+
+interface CardProps {
+  sampleData: SampleData;
+  onEdit?: (data: SampleData) => void;
+}
+
+export default function Card({ sampleData, onEdit }: CardProps) {
   return (
-    <div className="flex-shrink-0 relative w-64 h-80 rounded-3xl text-white py-8 px-6 overflow-hidden bg-zinc-900 bg-opacity-90 shadow-lg">
+    <div className="flex-shrink-0 w-full h-80 rounded-none text-white py-4 px-2 overflow-hidden bg-zinc-900 bg-opacity-90 shadow-lg">
       <div className="flex justify-between items-center">
-        <span className="cursor-pointer text-lg">✏️</span>
+        <span
+          className="cursor-pointer text-lg"
+          onClick={() => onEdit && onEdit(sampleData)}
+        >
+          ✏️
+        </span>
         <span className="cursor-pointer text-xl">❌</span>
       </div>
 
@@ -12,7 +31,7 @@ export default function Card({ sampleData }) {
 
       <p className="text-sm leading-tight text-white">{sampleData.body}</p>
 
-      <div className="footer absolute w-full bottom-0 left-0 px-6 py-3">
+      <div className="footer absolute w-full bottom-0 left-0 px-2 py-3">
         <div className="flex justify-between items-center">
           <h5 className="text-xs text-gray-400">{sampleData.date}</h5>
         </div>
