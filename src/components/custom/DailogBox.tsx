@@ -1,6 +1,5 @@
 import {
   Dialog,
-  DialogTrigger,
   DialogPortal,
   DialogOverlay,
   DialogContent,
@@ -8,8 +7,22 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../ui/dialog";
+import { useForm } from "react-hook-form";
 
 const DialogBox = ({ open, onOpenChange, sampleData }) => {
+  const { register, handleSubmit, reset } = useForm({
+    defaultValues: {
+      title: sampleData.title,
+      tagline: sampleData.tagline,
+      body: sampleData.body,
+    },
+  });
+
+  const onSubmit = (data) => {
+    onOpenChange(false);
+    reset();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
@@ -17,24 +30,18 @@ const DialogBox = ({ open, onOpenChange, sampleData }) => {
         <DialogContent>
           <DialogTitle>Edit Note</DialogTitle>
           <DialogDescription>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                console.log(e.target);
-                onOpenChange(false);
-              }}
-            >
+            <form onSubmit={handleSubmit(onSubmit)}>
               <div>
                 <label
-                  htmlFor="Title"
+                  htmlFor="title"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Title
                 </label>
                 <input
-                  id="Title"
+                  id="title"
                   type="text"
-                  defaultValue={sampleData.title}
+                  {...register("title")}
                   className="w-full p-2 border border-gray-300 rounded mt-1 text-sm text-muted-foreground"
                 />
               </div>
@@ -48,7 +55,7 @@ const DialogBox = ({ open, onOpenChange, sampleData }) => {
                 </label>
                 <input
                   id="tagline"
-                  defaultValue={sampleData.tagline}
+                  {...register("tagline")}
                   className="w-full p-2 text-sm text-muted-foreground border border-gray-300 rounded mt-1"
                 />
               </div>
@@ -61,7 +68,7 @@ const DialogBox = ({ open, onOpenChange, sampleData }) => {
                 </label>
                 <textarea
                   id="body"
-                  defaultValue={sampleData.body}
+                  {...register("body")}
                   className="w-full p-2 text-sm text-muted-foreground border border-gray-300 rounded mt-1"
                   rows={4}
                 />

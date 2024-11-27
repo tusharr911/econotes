@@ -1,15 +1,12 @@
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import Card from "./Card";
-import DailogBox from "./components/custom/dailogBox";
 
-const sampleData = {
-  id: 1,
-  title: "The quick brown fox jumps over the lazy dog",
-  tagline: "A quick brown fox jumps over the lazy dog",
-  body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vel ante nec nisl fermentum luctus..",
-};
+import DialogBox from "./components/custom/DailogBox";
+import { NoteSliceSelector } from "./store/NoteSlice";
 
 export default function Foreground() {
+  const notes = useSelector(NoteSliceSelector);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
 
@@ -21,10 +18,12 @@ export default function Foreground() {
   return (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        <Card sampleData={sampleData} onEdit={handleEdit} />
+        {notes.map((note) => (
+          <Card key={note.id} sampleData={note} onEdit={handleEdit} />
+        ))}
       </div>
       {selectedData && (
-        <DailogBox
+        <DialogBox
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           sampleData={selectedData}
