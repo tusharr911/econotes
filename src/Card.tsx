@@ -1,6 +1,8 @@
 import { useDispatch } from "react-redux";
-import { deleteNote, pinNote } from "./store/NoteSlice";
 import { toast } from "sonner";
+import { pinNote, updateNote } from "./store/NoteSlice";
+import { db } from "./firebase/firebase";
+import { doc, updateDoc } from "firebase/firestore";
 
 interface SampleData {
   id: number;
@@ -27,9 +29,23 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
     }
   };
 
-  const handlePin = () => {
-    dispatch(pinNote({ id: sampleData.id }));
-    toast.success(sampleData.pinned ? "Note unpinned successfully!" : "Note pinned successfully!");
+  const handlePin = async () => {
+    const newPinnedStatus = !sampleData.pinned;
+    const newPinnedDate = newPinnedStatus ? new Date().toISOString() : null;
+
+    const noteRef = doc(db, "notes", sampleData.id.toString());
+    await updateDoc(noteRef, {
+      pinned: newPinnedStatus,
+      pinnedDate: newPinnedDate,
+    });
+
+    dispatch(pinNote({
+      id: sampleData.id,
+      pinned: newPinnedStatus,
+      pinnedDate: newPinnedDate,
+    }));
+
+    toast.success(newPinnedStatus ? "Note pinned successfully!" : "Note unpinned successfully!");
   };
 
   const formattedDate = new Date(sampleData.date).toLocaleString("en-US", {

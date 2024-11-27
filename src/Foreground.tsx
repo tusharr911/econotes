@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Card from "./Card";
 import {
   NoteSliceSelector,
+  initializeNotes,
   addNote,
   updateNote,
   deleteNote,
 } from "./store/NoteSlice";
 import DialogBox from "./components/custom/DailogBox";
 import { toast } from "sonner";
+import { db } from "./firebase/firebase";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
+  doc,
+} from "firebase/firestore";
 
 export default function Foreground() {
   const notes = useSelector(NoteSliceSelector);
@@ -16,6 +26,19 @@ export default function Foreground() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedData, setSelectedData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      const querySnapshot = await getDocs(collection(db, "notes"));
+      const notesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      dispatch(initializeNotes(notesData));
+    };
+
+    fetchNotes();
+  }, [dispatch]);
 
   const notesPerPage = 6;
   const totalPages = Math.ceil(notes.length / notesPerPage);
@@ -30,40 +53,39 @@ export default function Foreground() {
     setIsDialogOpen(true);
   };
 
-  const handleSave = (data) => {
+  const handleSave = async (data) => {
     if (selectedData) {
+      const noteRef = doc(db, "notes", selectedData.id);
+      await updateDoc(noteRef, data);
       dispatch(
         updateNote({
           id: selectedData.id,
-          title: data.title,
-          tagline: data.tagline,
-          body: data.body,
+          ...data,
         })
       );
-      toast.success("Note updated successfully!");
     } else {
+      const docRef = await addDoc(collection(db, "notes"), {
+        ...data,
+        date: new Date().toISOString(),
+        pinned: false,
+        pinnedDate: null,
+      });
       dispatch(
         addNote({
-          id: Date.now(),
-          title: data.title,
-          tagline: data.tagline,
-          body: data.body,
+          id: docRef.id,
+          ...data,
           date: new Date().toISOString(),
           pinned: false,
           pinnedDate: null,
         })
       );
-      toast.success("Note added successfully!");
     }
     setIsDialogOpen(false);
   };
 
-  const handleDelete = (id) => {
-    dispatch(
-      deleteNote({
-        id,
-      })
-    );
+  const handleDelete = async (id) => {
+    await deleteDoc(doc(db, "notes", id));
+    dispatch(deleteNote(id));
     toast.success("Note deleted successfully!");
   };
 
@@ -86,32 +108,34 @@ export default function Foreground() {
   };
 
   return (
-    <div>
-      <button
-        onClick={handleAdd}
-        className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
-      >
-        Add Note
-      </button>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {paginatedNotes.map((note) => (
-          <Card
-            key={note.id}
-            sampleData={note}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+    <div className="flex flex-col h-screen">
+      <div className="flex-grow overflow-auto">
+        <button
+          onClick={handleAdd}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          Add Note
+        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {paginatedNotes.map((note) => (
+            <Card
+              key={note.id}
+              sampleData={note}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+        {isDialogOpen && (
+          <DialogBox
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            sampleData={selectedData}
+            onSave={handleSave}
           />
-        ))}
+        )}
       </div>
-      {isDialogOpen && (
-        <DialogBox
-          open={isDialogOpen}
-          onOpenChange={setIsDialogOpen}
-          sampleData={selectedData}
-          onSave={handleSave}
-        />
-      )}
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex justify-center bg-white py-4">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
