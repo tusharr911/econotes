@@ -9,6 +9,7 @@ import {
   deleteNote,
 } from "./store/NoteSlice";
 import DialogBox from "./components/custom/DailogBox";
+import ConfirmDeleteDialog from "./components/custom/ConfirmDeleteDialog";
 import { toast } from "sonner";
 import { db } from "./firebase/firebase";
 import {
@@ -30,22 +31,33 @@ import {
 } from "@/components/ui/pagination";
 import { Note } from "./types";
 import { Button } from "@/components/ui/button";
+import Loader from "./components/custom/Loader";
 
 export default function Foreground() {
   const notes = useSelector(NoteSliceSelector) as Note[];
   const dispatch = useDispatch();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedData, setSelectedData] = useState<Note | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchNotes = async () => {
-      const querySnapshot = await getDocs(collection(db, "notes"));
-      const notesData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Note[];
-      dispatch(initializeNotes(notesData));
+      setLoading(true);
+      try {
+        const querySnapshot = await getDocs(collection(db, "notes"));
+        const notesData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Note[];
+        dispatch(initializeNotes(notesData));
+      } catch (error) {
+        toast.error("An error occurred while fetching notes.");
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchNotes();
@@ -67,6 +79,7 @@ export default function Foreground() {
   const handleSave = async (
     data: Omit<Note, "id" | "date" | "pinned" | "pinnedDate">
   ) => {
+    setLoading(true);
     try {
       if (selectedData) {
         const noteRef = doc(db, "notes", selectedData.id);
@@ -99,17 +112,22 @@ export default function Foreground() {
     } catch (error) {
       toast.error("An error occurred while saving the note.");
     } finally {
+      setLoading(false);
       setIsDialogOpen(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    setLoading(true);
     try {
       await deleteDoc(doc(db, "notes", id));
       dispatch(deleteNote(id));
       toast.success("Note deleted successfully!");
     } catch (error) {
       toast.error("An error occurred while deleting the note.");
+    } finally {
+      setLoading(false);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -133,10 +151,22 @@ export default function Foreground() {
     setCurrentPage(page);
   };
 
+  const openDeleteDialog = (id: string) => {
+    setNoteToDelete(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (noteToDelete) {
+      handleDelete(noteToDelete);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
+      {loading && <Loader />}
       <div className="flex-grow overflow-auto">
-        <div className="flex justify-center my-4 w-full ">
+        <div className="flex justify-center my-4">
           <Button
             onClick={handleAdd}
             className="px-4 py-2 bg-black text-white rounded"
@@ -150,7 +180,7 @@ export default function Foreground() {
               key={note.id}
               sampleData={note}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={openDeleteDialog}
             />
           ))}
         </div>
@@ -160,6 +190,13 @@ export default function Foreground() {
             onOpenChange={setIsDialogOpen}
             sampleData={selectedData}
             onSave={handleSave}
+          />
+        )}
+        {isDeleteDialogOpen && (
+          <ConfirmDeleteDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+            onConfirm={confirmDelete}
           />
         )}
       </div>

@@ -3,7 +3,14 @@ import { toast } from "sonner";
 import { pinNote } from "./store/NoteSlice";
 import { db } from "./firebase/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import { Note } from "./type/index";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Note } from "./type";
 
 interface CardProps {
   sampleData: Note;
@@ -24,14 +31,12 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
     const newPinnedStatus = !sampleData.pinned;
     const newPinnedDate = newPinnedStatus ? new Date().toISOString() : null;
 
-    // Update Firestore document
     const noteRef = doc(db, "notes", sampleData.id);
     await updateDoc(noteRef, {
       pinned: newPinnedStatus,
       pinnedDate: newPinnedDate,
     });
 
-    // Update Redux store
     dispatch(
       pinNote({
         id: sampleData.id,
@@ -59,15 +64,27 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
   return (
     <div className="flex flex-col w-full h-80 text-white py-4 px-4 overflow-hidden bg-zinc-900 bg-opacity-90 shadow-lg rounded-lg">
       <div className="flex justify-between items-center">
-        <span
-          className="cursor-pointer text-lg"
-          onClick={() => onEdit && onEdit(sampleData)}
-        >
-          ✏️
-        </span>
-        <span className="cursor-pointer text-xl" onClick={handleDelete}>
-          ❌
-        </span>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="cursor-pointer text-lg"
+                onClick={() => onEdit && onEdit(sampleData)}
+              >
+                ✏️
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Edit Note</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-pointer text-xl" onClick={handleDelete}>
+                ❌
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Delete Note</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <h2 className="text-lg font-bold mb-2">{sampleData.title}</h2>
@@ -81,9 +98,9 @@ export default function Card({ sampleData, onEdit, onDelete }: CardProps) {
       <div className="flex justify-between items-center">
         <h5 className="text-xs text-gray-400">{formattedDate}</h5>
       </div>
-      <div className="tag w-full mt-2">
+      <div className="tag w-full py-5 flex justify-center items-center">
         <h3
-          className="text-sm font-semibold cursor-pointer "
+          className="text-sm font-semibold cursor-pointer"
           onClick={handlePin}
         >
           {sampleData.pinned ? "📌 Unpin" : "📌 Pin"}
